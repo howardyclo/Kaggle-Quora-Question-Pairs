@@ -3,6 +3,9 @@
 ## Abstract
 In the *Quora Question Pairs* competition, we were challenged to tackle the natural language processing (NLP) problem, given the question pairs, classify whether question pairs are duplicates or not. This report describes our team's solution, which acheives **top 10% (305/3307)** in this competition.
 
+## Disclaimer
+Some parts of our solution are referenced from the *kernel* and *discussion*. We are really appreciated to those amazing people in the *Kaggle* community who shared their knowledge selflessly.
+
 ## Team Membors
 - 羅右鈞 105062509
     - Text preprocessing: Automatic spelling error correction
@@ -23,7 +26,7 @@ The dataset is released by *Quora*, which is a well-known platform to gain and s
 
 ![](https://i.imgur.com/ebj3vro.png)
 
-The evaluation metric in this competition is **log loss (or cross-entropy loss in binary classfication)**: 
+The evaluation metric in this competition is **log loss (or cross-entropy loss in binary classfication)**:
 
 <center><img src="https://i.imgur.com/mSiOtiS.png" width=300></img></center>
 
@@ -56,7 +59,7 @@ Here are some NLP tasks we've done in detail, we thought that some appropriate p
         - Since training data contains mislabeled examples, so NER can't really provide a better score.
     - Since there's no direct evidence to whether this method is applicable, so we decided not to take risks. But clearly we should include this method into ensembling.
 
-- **Automatic spelling error correction**: 
+- **Automatic spelling error correction**:
     - First, check if a word is in the *Glove* (described below) vocabulary (~100M), if not, the word is considered to be mispelled. Second, find a list of good replacements for the misspelled word. Finally, choose the best replacement based on *SpaCy*'s smoothed log probability of the words.
     - Some special cases are avoided to be corrected in order not to destruct data too much, such as the word is a special term recognized by applying NER.
 
@@ -73,7 +76,7 @@ Here are some NLP tasks we've done in detail, we thought that some appropriate p
     - Out of vocabulary word wount
 
 - **Syntatic features**: We convert a sentence to POS tag sequence and dependency tag sequence. For example, **"Can I recover my email if i forgot the password"** to POS tag sequence **"VERB PRON VERB ADJ NOUN ADP PRON VERB DET NOUN"**, and to dependency tag sequence **"aux nsubj ROOT poss dobj mark nsubj advcl det dobj"**. We then compute basic features based on those sequences to generate a set of new features. Also, "ROOT" postion is also a new feature.
-    
+
 - **Latent semantic embedding features**: Character and word N-gram (N=1~3) count matrices, TF-IDF weight matrices with L1, L2-norm. We also applied SVD on TF-IDF weight matrices to perform dimension reduction.
 
 - **Neural embedding features**: *Word2Vec* pretrained on *Google News*, *GloVe* and *FastText* pretrained on *Wiki*. We basically sum all of word embeddings and normalize it to unit vector to represent a sentence (so-called "sentence embedding"). In our case, DL models perform better with embeddings pretrained on *Wiki* than *Google News*. We finally choose *FastText* embeddings as input features for our DL models, since *FastText* trains on larger *Wiki* corpus than *GloVe*.
@@ -81,17 +84,19 @@ Here are some NLP tasks we've done in detail, we thought that some appropriate p
 - **Embedding distance features**: We also compute various distance metrics, such as cosine, cityblock, canberra, euclidean, minkowski, braycurtis distance for both *Word2Vec* and *FastText* sentence embeddings, and also word mover distance only for *Word2Vec*.
 
 - **Embedding skewness and kurtosis**: Skewness is a measure of lacking of symmetry. Kurtosis is a measure of whether the data are heavy-tailed or light-tailed relative to a normal distribution.
-    
+
 - **Other "magic" features (or "competition-oriented hacking features")**:
-    
+
     - **Word correction count**: Should be a strong feature, since some of typos of data are machine-generated and have some pattern amoung them. But it took way too much time to compute, so we only tried on training data but end up giving up due to the requirement of expensive computation on testing data.
 
     - **Question ID (qid)**: Originally, qid is only an identifier for specific question. But one of the participants found that the qid is actually a time dependent serial number (by searching on Quora directly). Furthermore, the duplicate label ratio becomes lower and lower as the time pass. The hypothesis is that Quora itself also tried to reduce duplicated question in this period of time. So, the qid becomes a strong feature.
 
     - **Numbers of question occurrence**: One suggested that the duplicated questions tend to be the same group of questions. In other words, the more time a question appears in the training set, the more probable such question pair is duplicated regardless of what question is paired with it.
-    
+
+    - And other features shared from the *Kaggle* community.
+
     It is worth mention that those magic features end up helping a lot. Though we call those features "magic", in fact, we think those magic features basically capture some hidden phenomenon behind the data, which make them become strong features in this task.
-    
+
 
 ### Modeling
 We basically tried dozens of model architectures and parameter tunings. Here we only report the models that works for us.
@@ -110,7 +115,7 @@ We basically tried dozens of model architectures and parameter tunings. Here we 
 - Other models we've tried:
 
     - Bidirectional LSTM: People usually replace LSTM with Bi-LSTM since its strong performance. In our case, it doubles the training time but with a very slight improvement. (Although an improvement is still precious for data scientists.)
-    
+
     ![](https://ai2-s2-public.s3.amazonaws.com/figures/2016-11-08/191dd7df9cb91ac22f56ed0dfa4a5651e8767a51/1-Figure2-1.png)
 
     - Treating question pairs as an image: Compute word embeddings similarity distances between each of the words of one question and each of the words from the other sentence. Since some duplicate questions seems to have positional locality (i.e. "same short phrases", "similar descriptions with some words being replaced"), so we can treat it as an image. This method has approximately the same performance compared to either LSTM or CNN approaches and has advantage in visualizing, but the downside is the training loss is very unstable during training, which made us finally decide to give it up.
@@ -125,11 +130,11 @@ A simple and helpful approach but risky in some cases, for example, in this comp
 - Can we simply upsample by forming two identical questions together as a new training example?
 
     **NOT EXACTLY**. There doesn't exist any of such kind of examples in the dataset. It may improve generalizability for "human", but not for this dataset, hence for this competiton.
-    
+
 - Does two duplicate pairs (A,B) and (B,C) imply that (A,C) pair is also duplicate?
 
     **NO**. There exists 1% mislabeled examples in the dataset. Both methods destruct the original data distribution. There exists some (A,C) pairs that are labeled as non-duplicate pair.
-    
+
 - Can we change the order when concatenating question pair embeddings horizontally as a data augmentation technique (e.g. `x1 = concate(q1, q2, axis=1)` to `x2 = concate(q2, q1, axis=1)`) when using neural networks?
 
     **YES**. This works. Since `x1` and `x2` might yeild different results when feeding into the FC layer, we used such technique to balance our network training. Unfortunately, during the competition, we forgot to switch the externel handcrafted features' order of the question pair (described in *Feature Engineering*) when feeding into the FC layer along with question pair embeddings, which might effect badly to our model's performance.
@@ -144,7 +149,7 @@ Note that we could not know the porpotion of the positive examples in the testin
 
 ![](https://scontent-tpe1-1.xx.fbcdn.net/v/t35.0-12/19074523_1975873129311801_104397357_o.png?oh=857a8a2e5a3713d209189ecfef287ed9&oe=593FDAAB)
 
-We split **~400,000** training data into **~360,000** examples as training set and **~40,000** examples as validation set. 
+We split **~400,000** training data into **~360,000** examples as training set and **~40,000** examples as validation set.
 
 We further split the original **~40,000** validation set into **~28,000** training set and **~12,000** validation set for training our ensembling models.
 
@@ -161,12 +166,8 @@ We also did traditional stacking with LSTM directly, but we found that this over
 
 ### Submission Score
 
-We finally achieves **top 10% (319/3394)** in this competition. 
+We finally achieves **top 10% (319/3394)** in this competition.
 
-| | Private log loss | Public log loss |
-|-|-|-|-|-|
-|LSTM|0.15625|0.15380|
-|Stacking with XGBoost|0.17086|0.167081|
-|Blending with XGBoost|**0.15489**|**0.15172**|
+![](https://i.imgur.com/yCaU2pJ.png)
 
 (Note: The public log loss is calculated with approximately **35%** of the testing data. The private log loss is based on the other **65%**. The *Kaggle* competition's ranking score is based on the private log loss.)
