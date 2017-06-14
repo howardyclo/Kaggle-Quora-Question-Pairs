@@ -147,7 +147,7 @@ Note that we could not know the porpotion of the positive examples in the testin
 
 ### Training and Ensembling
 
-![](https://scontent-tpe1-1.xx.fbcdn.net/v/t35.0-12/19074523_1975873129311801_104397357_o.png?oh=857a8a2e5a3713d209189ecfef287ed9&oe=593FDAAB)
+![](https://i.imgur.com/gn6Xd1o.png)
 
 We split **~400,000** training data into **~360,000** examples as training set and **~40,000** examples as validation set.
 
