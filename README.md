@@ -60,7 +60,7 @@ Here are some NLP tasks we've done in detail, we thought that some appropriate p
     - Since there's no direct evidence to whether this method is applicable, so we decided not to take risks. But clearly we should include this method into ensembling.
 
 - **Automatic spelling error correction**:
-    - First, check if a word is in the *Glove* (described below) vocabulary (~100M), if not, the word is considered to be mispelled. Second, find a list of good replacements for the misspelled word. Finally, choose the best replacement based on *SpaCy*'s smoothed log probability of the words.
+    - First, check if a word is in the *Glove* (described below) vocabulary (~1M), if not, the word is considered to be mispelled. Second, find a list of good replacements for the misspelled word. Finally, choose the best replacement based on *SpaCy*'s smoothed log probability of the words.
     - Some special cases are avoided to be corrected in order not to destruct data too much, such as the word is a special term recognized by applying NER.
 
 ### Feature Engineering
