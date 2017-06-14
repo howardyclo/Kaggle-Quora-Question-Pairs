@@ -7,11 +7,11 @@ In the *Quora Question Pairs* competition, we were challenged to tackle the natu
 Some parts of our solution are referenced from the *kernel* and *discussion*. We are really appreciated to those amazing people in the *Kaggle* community who shared their knowledge selflessly.
 
 ## Team Membors
-- 羅右鈞 105062509
+- Howard Lo [Github](https://github.com/YuChunLOL)
     - Text preprocessing: Automatic spelling error correction
     - Feature engineering: Latent semantic embeddings, word embeddings, similarity distances of various embeddings, syntatical features, etc.
     - Modeling: CNN, LSTM, gradient boosting machine.
-- 林杰 102000039
+- Hubert Lin [Github](https://github.com/hubert0527)
     - Text preprocessing: Name entity replacement.
     - Data preprocessing: data augmentation.
     - Modeling: LSTM, gradient boosting machine, ensembling.
