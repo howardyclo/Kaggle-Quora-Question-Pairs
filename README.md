@@ -1,4 +1,6 @@
 # [Kaggle Competition: Quora Question Pairs](https://www.kaggle.com/c/quora-question-pairs/overview)
+[Video Version](https://youtu.be/IwW2dmrZLjI)
+
 
 ## Abstract
 In the *Quora Question Pairs* competition, we were challenged to tackle the natural language processing (NLP) problem, given the question pairs, classify whether question pairs are duplicates or not. This report describes our team's solution, which acheives **top 10% (305/3307)** in this competition.
